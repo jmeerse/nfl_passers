@@ -1,1 +1,55 @@
+#only need to install packages once
+install.packages("tidyverse")
+install.packages("nflfastR")
+install.packages("ggimage")
+install.packages("gt")
+install.packages("remotes")
+library(remotes)
+remotes::install_github("jthomasmock/gtExtras")
 
+#need to load libraries every time you run the program
+library(tidyverse)
+library(nflfastR)
+library(ggimage)
+library(gt)
+library(gtExtras)
+library(remotes)
+
+
+#various ways to load play-by-play data
+
+pbp <- load_pbp(2020:2021)
+
+pbp_20 <- load_pbp(2020)
+pbp_21 <- load_pbp(2021)
+
+#filter to specific QB -- need to know passer_player_name (and note that Josh Allen's name got changed midway through 2021, hence the "or" | statement
+JAllen_21 <- pbp_21 %>%
+  filter(passer_player_name == 'J.Allen' | passer_player_name == 'Jos.Allen')
+  
+#need to create a play_num variable  
+JAllen_21 <- JAllen_21 %>%
+  mutate(play_num = row_number())
+
+
+#create week by week total epa
+JAllen_21_wk_epa <- JAllen_21 %>% group_by(week) %>%
+  summarise(epa = sum(qb_epa))
+
+#make a graph
+ggplot(JAllen_21_wk_epa, aes(x=week, y=epa, group=1)) +
+  geom_line()+
+  geom_point()
+
+# create air yards after sack variable lead takes at next value; should do this for every stat you want to measure after a sack - can combine into one mutate command
+JAllen_21 <- JAllen_21 %>% 
+  mutate(air_yards_as = lead(JAllen_21$air_yards))
+  
+
+#create after sack data frame
+JAllen_21_as <- JAllen_21 %>% filter(sack == 1)
+
+# do we need to filter out na's for epa?  This does it maybe
+JA_20_s <- JAllen_20 %>%
+  filter(sack == 1) %>%
+  filter (!is.na(epa))
