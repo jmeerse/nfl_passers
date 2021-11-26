@@ -100,18 +100,17 @@ stats <- stats %>%
 #makes a plot that connects each type of stat
 stats %>%
   ggplot(aes(x = g_air_yards, xend =as_air_yards,  y = fct_reorder(passer_player_name, g_air_yards))) +
-  geom_dumbbell(aes(fill = team_color, color = team_color2), stat = "identity") +
-  geom_point(aes(x = g_air_yards), size = 3, color = "#FFFCFC", fill = "grey65", shape = 21, stroke = .7) +
-  geom_point(aes(fill = team_color), size = 1, color = "#FFFCFC", shape = 21, stroke = .7) +
+  geom_dumbbell(aes(fill = team_color, color = team_color2), size = 1) +
+  geom_point(aes(fill = team_color), size = 2, shape = 21, stroke = .7) +
   scale_color_identity(aesthetics = c("fill", "color")) +
   theme_bw() +
-  labs(x = "Average Air Yards Pass After a Sack",
-      y = "Passer Name",
-      title = "Quarterback Agressiveness after a setback",
-      subtitle = "2021, minimum of 150 plays to be included") +
-      theme(plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
-            plot.subtitle = element_text(size = 10, hjust = 0.5),
-            panel.grid.major.y = element_line(size = 0.1))
+  labs(x = "Average Air Yards",
+             y = "Passer Name",
+             title = "Quarterback Agressiveness after a setback",
+             subtitle = "2021, minimum of 150 plays to be included") +
+  theme(plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+              plot.subtitle = element_text(size = 10, hjust = 0.5),
+              panel.grid.major.y = element_line(size = 0.1))
 
 ggplot() +
   geom_dumbbell(data = stats, aes(y = fct_reorder(passer_player_name, g_air_yards), x = g_air_yards, xend = as_air_yards),
