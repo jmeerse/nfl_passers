@@ -99,9 +99,9 @@ stats <- stats %>%
 
 #difference good - after sack
 stats <- stats %>% 
-  mutate(air_diff = g_air_yards - as_air_yards, 
-         cpoe_diff = g_cpoe - as_cpoe, 
-         epa_diff = g_epa - as_epa
+  mutate(air_diff = as_air_yards - g_air_yards, 
+         cpoe_diff = as_cpoe - g_cpoe, 
+         epa_diff = as_epa - g_epa
   )
 
 #makes a plot that connects each type of stat
