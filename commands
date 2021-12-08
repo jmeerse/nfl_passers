@@ -20,6 +20,7 @@ library(remotes)
 
 pbp <- load_pbp(2020:2021)
 pbp_21$passer_player_name[pbp_21$passer_player_name == "Jos.Allen"] <- "J.Allen" #Josh allen got recoded only during week 3 2021
+pbp_21$passer_player_name[pbp_21$passer_player_name == "Aa.Rodgers"] <- "A.Rodgers" #Aaron Rodgers also got recoded 
 
 pbp_20 <- load_pbp(2020)
 pbp_21 <- load_pbp(2021)
@@ -156,6 +157,66 @@ JAllen_21 <- JAllen_21 %>%
 
 #create after sack data frame
 JAllen_21_as <- JAllen_21 %>% filter(sack == 1)
+
+#______________________________________________________________________________________________________________________________________________________________________
+#looking at cumulative epa and wpa
+
+qbs <- pbp_21 %>% 
+  filter(pass == 1) %>% 
+  group_by(passer_player_name) %>% 
+  filter(n() > 150)
+
+qbs <- qbs %>% select(week, passer_player_name, posteam, qb_epa, wpa)
+qbs <- arrange(qbs, passer_player_name, week)
+
+qbs <- qbs %>% mutate(play_num = seq_along(passer_player_name))
+
+logos_df <- qbs %>%
+  group_by(posteam) %>%
+  summarise(
+    tot_wpa = last(sum_wpa),
+    tot_epa = last(sum_epa),
+    last_play = max(play_num)
+  ) %>%
+  left_join(teams_colors_logos, by=c("posteam"="team_abbr"))
+
+
+#qb wpa for season
+qb_wpa <- ggplot()+
+  geom_hline(yintercept=0, size=1, color="black")+
+  geom_line(aes(x=qbs$play_num, y=qbs$sum_wpa,color=qbs$posteam,alpha=ifelse(qbs$posteam=="BUF"|qbs$posteam=="NE", 1, .8)),size=1.5, show.legend = FALSE)+
+  geom_image(aes(x=logos_df$last_play, y=logos_df$tot_wpa, image = logos_df$team_logo_espn), size = 0.045, by = "width", asp = 16/9)+
+  scale_color_manual(values=c("ARI"="#97233f", "ATL"="#a71930", "BAL"="#241773", "BUF"="#00338d", "CAR"="#0085ca","CHI"="#0b162a","CIN"="#000000","CLE"="#fb4f14",
+                              "DAL"="#002244", "DEN"="#002244","DET"="#005a8b", "GB"="#203731","HOU"="#03202f","IND"="#002c5f", "JAX"="#000000","KC"="#e31837",
+                              "LAC"="#002244","LA"="#002244","MIA"="#008e97","MIN"="#4f2683","NE"="#002244","NO"="#9f8958","NYG"="#0b2265","NYJ"="#125740","OAK"="#a5acaf",
+                              "PHI"="#004953","PIT"="#000000","SD"="#002244","SF"="#aa0000","SEA"="#69be28","STL"="#002244","TB"="#d50a0a","TEN"="#4095d1","WAS"="#773141")) +
+  scale_x_continuous(breaks=seq(0,500,50), expand=c(.02,0))+
+  scale_y_continuous(breaks=seq(-200,800,50), expand=c(.01,0))+
+  theme_bw() +
+  theme(panel.background=element_blank()) +
+  theme(plot.background=element_rect(fill="#FFFFFF")) +
+  theme(panel.border = element_blank()) +
+  theme(panel.grid.major= element_blank()) +
+  theme(axis.text.x=element_text(angle = 50, vjust = 0.5,    size=11,colour="#535353",face="bold")) +
+  theme(axis.text.y=element_text(size=11,colour="#535353",face="bold")) +
+  theme(axis.title.y=element_text(size=11,colour="#535353",face="bold",vjust=1.5)) +
+  theme(axis.title.x=element_text(size=11,colour="#535353",face="bold",vjust=-.5)) +
+  theme(plot.title=element_text(face="bold", colour="#006ebb",size=18, family = "Dense")) +
+  theme(plot.subtitle=element_text(colour = "#006ebb", size = 12, family = "Dense")) +
+  theme(axis.ticks = element_blank()) +
+  theme(aspect.ratio = 9 / 16) +
+  xlab("Total Number of Plays") +
+  ylab("Cumulative WPA")
+
+qb_wpa
+
+ggplot(logos_df, aes(x = tot_wpa, y = tot_epa)) + 
+  geom_point() + 
+  geom_image(aes(x=tot_wpa, y=tot_epa, image = team_logo_espn), 
+             size = 0.045, by = "width", asp = 16/9) +
+  geom_hline(yintercept = mean(logos_df$tot_epa, na.rm = T)) +
+  geom_vline(xintercept = mean(logos_df$tot_wpa, na.rm = T))
+
 
 # do we need to filter out na's for epa?  This does it maybe
 JA_20_s <- JAllen_20 %>%
