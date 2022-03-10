@@ -14,6 +14,7 @@ library(ggimage)
 library(gt)
 library(gtExtras)
 library(remotes)
+library(nflplotR)  #may need to install this
 
 
 #various ways to load play-by-play data
@@ -222,3 +223,110 @@ ggplot(logos_df, aes(x = tot_wpa, y = tot_epa)) +
 JA_20_s <- JAllen_20 %>%
   filter(sack == 1) %>%
   filter (!is.na(epa))
+  
+  
+# new stuff
+
+pbp <- load_pbp(2021)
+pbp$passer_player_name[pbp$passer_player_name == "Jos.Allen"] <- "J.Allen" #Josh allen got recoded only during week 3 2021
+pbp$passer_player_name[pbp$passer_player_name == "Aa.Rodgers"] <- "A.Rodgers" #Aaron Rodgers also got recoded 
+
+pbpp <- pbp %>%
+  filter(pass == 1) %>%
+  filter(!is.na(passer_player_name)) %>% 
+  group_by(passer_player_name) %>% 
+  filter(n() > 150) %>% 
+  ungroup()
+
+TotPlays <- pbpp %>% 
+  group_by(passer_player_name) %>% 
+  summarise(attempts = n(), tds = sum(touchdown), team_abbr = last(posteam))  #need team_abbr to use nflplotr helmet pics
+
+#puts colors according to td totals 
+TotPlays<- TotPlays %>% mutate(colorz = if_else(tds < 10, "purple",
+                                                if_else((tds >= 10) & (tds < 20), "orange",
+                                                        if_else((tds >= 20) & (tds < 30), "cyan",
+                                                                if_else((tds >= 30) & (tds < 40), "darkred",
+                                                                        if_else((tds >= 40) & (tds < 50),"#F32026",
+                                                                                "green"))))))
+
+Sets coordinates for graphing 
+labels <- tribble(
+  ~ x, ~ y, ~ label, ~ colorz,
+  20, 13, "10", "purple",
+  20, 23, "20","orange",
+  20, 33, "30","cyan",
+  20, 43, "40","darkred",
+  20, 53, "            50 Passing TDs","#F32026",
+  20, 63, "60","green",
+  0, 70, "0/900 Pass Attempts","white",
+  100, 60, "100","white",
+  200, 60, "200","white",
+  300, 60, "300","white",
+  400, 60, "400","white",
+  500, 60, "500","white",
+  600, 60, "600","white",
+  700, 60, "700","white",
+  800, 60, "800","white"
+)
+
+
+#polar coord spiral plot of attempts and tds for 37 qbs w > 150 attempts
+TotPlays %>% 
+  dplyr::mutate(
+    colour = ifelse(tds > 40, colorz, "b/w"),
+    alpha = ifelse(tds > 40, 0.9, 0.2)
+  ) %>% 
+  ggplot(aes(x = attempts, y = tds)) +
+  geom_segment(aes(color = colorz),xend = 0, yend = 0, alpha = 0.7) +
+  geom_point(size = 0.5, alpha = 0.7) +
+  geom_text(data = labels, aes(x = x, y = y, label = label, color = colorz)) +
+  geom_point(size = 0.5, alpha = 0.7) +
+  geom_nfl_logos(aes(team_abbr = team_abbr, alpha = alpha), width = 0.065) +
+  expand_limits(x = c(0,900), y = c(0,60)) +
+  scale_x_continuous(breaks = seq(100,900,100)) +
+  scale_y_continuous(breaks = seq(10,60,10)) +
+  scale_color_identity() +
+  coord_polar() +
+  theme_dark() +
+  theme(legend.position = "none",
+        panel.grid.minor = element_blank(),
+        #plot.background = element_rect(color = "#181818",fill = "#181818"),
+        #panel.background = element_rect(color = "#181818",fill = "#181818"),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        plot.title = element_text(color = "white",size = 26, face = "bold"),
+        plot.caption = element_text(color = "white", size = 12)
+  )
+
+
+# xy-graph of same, with segments drawn to each player
+TotPlays %>% 
+  dplyr::mutate(
+    colour = ifelse(tds > 40, colorz, "b/w"),
+    alpha = ifelse(tds > 40, 0.9, 0.2)
+  ) %>% 
+  ggplot(aes(x = attempts, y = tds)) +
+  geom_segment(aes(color = colorz),xend = 0, yend = 0, alpha = 0.7) +
+  geom_point(size = 0.5, alpha = 0.7) +
+  geom_text(data = labels, aes(x = x, y = y, label = label, color = colorz)) +
+  geom_point(size = 0.5, alpha = 0.7) +
+  geom_nfl_logos(aes(team_abbr = team_abbr, alpha = alpha), width = 0.065) +
+  expand_limits(x = c(0,900), y = c(0,60)) +
+  scale_x_continuous(breaks = seq(100,900,100)) +
+  scale_y_continuous(breaks = seq(10,60,10)) +
+  scale_color_identity() +
+  theme_dark() +
+  theme(legend.position = "none",
+        panel.grid.minor = element_blank(),
+        #plot.background = element_rect(color = "#181818",fill = "#181818"),
+        #panel.background = element_rect(color = "#181818",fill = "#181818"),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        plot.title = element_text(color = "white",size = 26, face = "bold"),
+        plot.caption = element_text(color = "white", size = 12)
+  )
+
+  
+  
+  
