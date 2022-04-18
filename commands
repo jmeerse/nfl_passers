@@ -6,6 +6,8 @@ install.packages("gt")
 install.packages("remotes")
 library(remotes)
 remotes::install_github("jthomasmock/gtExtras")
+install.packages("hrbrthemes")
+install.packages("viridisLite")
 
 #need to load libraries every time you run the program
 library(tidyverse)
@@ -132,6 +134,46 @@ stats %>%
            color = stats$team_color, arrow = arrow(length =unit(3,"mm"))) +
   geom_text(data=stats, aes(x=as_air_yards, y=passer_player_name, label=air_diff),
             color=stats$team_color, size=2.75, vjust=-0.5)
+            
+
+#highlight a specific player
+airdiff <- stats %>%
+  mutate( highlight=ifelse(passer_player_name =="J.Allen", "Allen", "Other")) %>%
+  ggplot( aes(x=season, y=air_diff, group=passer_player_name, color=highlight, size=highlight)) +
+  geom_line() +
+  scale_color_manual(values = c("#69b3a2", "lightgrey")) +
+  scale_size_manual(values=c(1.5,0.2)) +
+  scale_x_continuous(breaks = c(2019, 2020, 2021)) + 
+  ggtitle("Air Yards Differential After Setback") +
+  theme_ipsum() +
+  geom_label( x=2020, y=2, label="Josh Allen", size=4, color="#69b3a2") +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=14),
+    panel.grid.minor.x = element_blank()
+  )
+
+#multiple graphs highlighting different players
+tmp <- stats %>%
+  mutate(Player2=passer_player_name)
+
+#air diff by player by year -- gives lots of error messages, but works -- need to do something about players with only 1 year
+airdiff1 <- tmp[1:18,] %>% #change numbers according to rows in player_team to get 9 players
+  ggplot( aes(x=season, y=air_diff)) +
+  geom_line( data=tmp %>% dplyr::select(-Player2), aes(group=passer_player_name), color="grey", size=0.5, alpha=0.5) +
+  geom_line( aes(color=passer_player_name), color="#69b3a2", size=1.2 ) +
+  scale_x_continuous(breaks = c(2019, 2020, 2021)) + 
+  scale_color_viridis(discrete = TRUE) +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=14),
+    panel.grid = element_blank(),
+    panel.grid.minor.x = element_blank()
+  ) +
+  ggtitle("Players A - Z Air Diff by Season") +
+  facet_wrap(~Player2)
+
 
   
 
