@@ -15,6 +15,7 @@ library(gt)
 library(gtExtras)
 library(remotes)
 library(nflplotR)  #may need to install this
+library(ggalt) #needed for dumbell plot
 
 
 #various ways to load play-by-play data
@@ -27,9 +28,8 @@ pbp_20 <- load_pbp(2020)
 pbp_21 <- load_pbp(2021)
 pbp_21$passer_player_name[pbp_21$passer_player_name == "Jos.Allen"] <- "J.Allen"
 
-  
 #trying to measure after sack for every qb
-pbpp <- pbp_21 %>%
+pbpp <- pbp1921 %>%
   filter(pass == 1) %>%
   filter(!is.na(passer_player_name)) %>% 
   group_by(passer_player_name) %>% 
@@ -37,16 +37,16 @@ pbpp <- pbp_21 %>%
   ungroup()
 
 #select important info
-pbpp <- pbpp %>% select(week, passer_player_name, air_yards, series_result, qb_epa, epa, air_epa, 
-                wpa, sack, cpoe, complete_pass, interception, fumble, 
-                qb_hit, receiver_player_name, posteam)
+pbpp <- pbpp %>% select(season,week, passer_player_name, air_yards, series_result, qb_epa, epa, air_epa, 
+                        wpa, sack, cpoe, complete_pass, interception, fumble, 
+                        qb_hit, receiver_player_name, posteam)
 
 #sort by passer and play number - hopefully get sequential plays
-pbpps <- arrange(pbpp, passer_player_name, week)
+pbpps <- arrange(pbpp, passer_player_name, season, week)
 
 #counting total plays by passer
 TotPlays <- pbpps %>% 
-  group_by(passer_player_name) %>% 
+  group_by(passer_player_name, season) %>% 
   summarise(plays = n(), sacks = sum(sack), fumbles = sum(fumble), interceptions = sum(interception), sack_rate = sacks/plays)
 
 #new variables
@@ -62,42 +62,46 @@ pbpps$air_yards_as <- if_else((pbpps$passer_player_name == lead(pbpps$passer_pla
                               NULL)
 #have to do the same for all the other _as variables, but just change variable name
 pbpps$qb_epa_as <- if_else((pbpps$passer_player_name == lead(pbpps$passer_player_name)) & ((pbpps$sack == 1) | (pbpps$interception == 1) | (pbpps$fumble == 1)) , 
-                              lead(pbpps$qb_epa), 
-                              NULL)
+                           lead(pbpps$qb_epa), 
+                           NULL)
 pbpps$epa_as <- if_else((pbpps$passer_player_name == lead(pbpps$passer_player_name)) & ((pbpps$sack == 1) | (pbpps$interception == 1) | (pbpps$fumble == 1)) , 
-                              lead(pbpps$epa), 
-                              NULL)
+                        lead(pbpps$epa), 
+                        NULL)
 pbpps$wpa_as <- if_else((pbpps$passer_player_name == lead(pbpps$passer_player_name)) & ((pbpps$sack == 1) | (pbpps$interception == 1) | (pbpps$fumble == 1)) , 
-                              lead(pbpps$wpa), 
-                              NULL)
+                        lead(pbpps$wpa), 
+                        NULL)
 pbpps$cpoe_as <- if_else((pbpps$passer_player_name == lead(pbpps$passer_player_name)) & ((pbpps$sack == 1) | (pbpps$interception == 1) | (pbpps$fumble == 1)) , 
-                              lead(pbpps$cpoe), 
-                              NULL)
+                         lead(pbpps$cpoe), 
+                         NULL)
 pbpps$complete_pass_as <- if_else((pbpps$passer_player_name == lead(pbpps$passer_player_name)) & ((pbpps$sack == 1) | (pbpps$interception == 1) | (pbpps$fumble == 1)) , 
-                              lead(pbpps$complete_pass), 
-                              NULL)
+                                  lead(pbpps$complete_pass), 
+                                  NULL)
 pbpps$receiver_player_name_as <- if_else((pbpps$passer_player_name == lead(pbpps$passer_player_name)) & ((pbpps$sack == 1) | (pbpps$interception == 1) | (pbpps$fumble == 1)) , 
-                              lead(pbpps$receiver_player_name), 
-                              NULL)
+                                         lead(pbpps$receiver_player_name), 
+                                         NULL)
 
 #epa etc for good plays
 stats_ns <- pbpps %>% 
   filter(sack != 1, interception != 1, fumble != 1) %>% 
-  group_by(passer_player_name) %>% 
-  summarise(g_epa = mean(epa, na.rm = T), g_cpoe = mean(cpoe, na.rm = T), g_air_yards = mean(air_yards, na.rm = T), team = last(posteam))
+  group_by(passer_player_name, season) %>% 
+  summarise(g_epa = mean(epa, na.rm = T), g_cpoe = mean(cpoe, na.rm = T), g_air_yards = mean(air_yards, na.rm = T), plays = n(), team = last(posteam))
 
 #same, but for sacks etc
 stats_as <- pbpps %>% 
   filter(sack == 1 | interception == 1 | fumble == 1) %>% 
-  group_by(passer_player_name) %>% 
-  summarise(as_epa = mean(epa_as, na.rm = T), as_cpoe = mean(cpoe_as, na.rm = T), as_air_yards = mean(air_yards_as, na.rm = T))
+  group_by(passer_player_name, season) %>% 
+  summarise(as_epa = mean(epa_as, na.rm = T), as_cpoe = mean(cpoe_as, na.rm = T), as_air_yards = mean(air_yards_as, na.rm = T), plays = n())
+
+#filter for more than 150 plays
+stats_ns <- filter(stats_ns, plays > 150)
+
 
 # combine good plays and after-sack plays  -- need to attach team name color logos etc
-stats <- left_join(stats_ns, stats_as, by = "passer_player_name")
+stats <- left_join(stats_ns, stats_as, by = c("passer_player_name", "season"))
 
 #puts logos and colors on
 stats <- stats %>%
-+   left_join(teams_colors_logos, by = c("team" = "team_abbr"))
+     left_join(teams_colors_logos, by = c("team" = "team_abbr"))
 
 #difference good - after sack
 stats <- stats %>% 
@@ -128,6 +132,10 @@ stats %>%
            color = stats$team_color, arrow = arrow(length =unit(3,"mm"))) +
   geom_text(data=stats, aes(x=as_air_yards, y=passer_player_name, label=air_diff),
             color=stats$team_color, size=2.75, vjust=-0.5)
+
+  
+
+
 
  
 #______________________________________________________________________________________________________________________________________________________________________
