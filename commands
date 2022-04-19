@@ -178,7 +178,7 @@ airdiff1 <- tmp[1:18,] %>% #change numbers according to rows in player_team to g
 airdiff1
   
 
-#scatterplots - can make these fancier
+#scatterplots - can make these fancier - add y = x line?
 air_scatter <- stats %>% ggplot(aes(x=g_air_yards, y = as_air_yards))+geom_point()
 epa_scatter <- stats %>% ggplot(aes(x=g_epa, y = as_epa))+geom_point()
 cpoe_scatter <- stats %>% ggplot(aes(x=g_cpoe, y = as_cpoe))+geom_point()
@@ -187,7 +187,7 @@ air_scatter
 epa_scatter
 cpoe_scatter
 
-#boxplots
+#boxplots - change g_ to as_ for after setback - how to get both on one graph?
 air_box <- stats %>% ggplot(aes(x=g_air_yards, 
                                 y = season, 
                                 group = season)) + 
