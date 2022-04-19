@@ -20,15 +20,12 @@ library(nflplotR)  #may need to install this
 library(ggalt) #needed for dumbell plot
 
 
-#various ways to load play-by-play data
+#load play-by-play data
 
-pbp <- load_pbp(2020:2021)
-pbp_21$passer_player_name[pbp_21$passer_player_name == "Jos.Allen"] <- "J.Allen" #Josh allen got recoded only during week 3 2021
-pbp_21$passer_player_name[pbp_21$passer_player_name == "Aa.Rodgers"] <- "A.Rodgers" #Aaron Rodgers also got recoded 
-
-pbp_20 <- load_pbp(2020)
-pbp_21 <- load_pbp(2021)
-pbp_21$passer_player_name[pbp_21$passer_player_name == "Jos.Allen"] <- "J.Allen"
+pbp1921 <- load_pbp(2019:2021)
+pbp_21$passer_player_name[pbp1921$passer_player_name == "Jos.Allen"] <- "J.Allen" #Josh allen got recoded only during week 3 2021
+pbp_21$passer_player_name[pbp1921$passer_player_name == "Aa.Rodgers"] <- "A.Rodgers" #Aaron Rodgers also got recoded 
+pbp_21$passer_player_name[pbp1921$passer_player_name == "G.Minshew"] <- "A.Rodgers" #Aaron Rodgers also got recoded 
 
 #trying to measure after sack for every qb
 pbpp <- pbp1921 %>%
@@ -37,6 +34,8 @@ pbpp <- pbp1921 %>%
   group_by(passer_player_name) %>% 
   filter(n() > 150) %>% 
   ungroup()
+
+remove(pbp1921)
 
 #select important info
 pbpp <- pbpp %>% select(season,week, passer_player_name, air_yards, series_result, qb_epa, epa, air_epa, 
@@ -145,13 +144,15 @@ airdiff <- stats %>%
   scale_size_manual(values=c(1.5,0.2)) +
   scale_x_continuous(breaks = c(2019, 2020, 2021)) + 
   ggtitle("Air Yards Differential After Setback") +
-  theme_ipsum() +
+  #theme_ipsum() +
   geom_label( x=2020, y=2, label="Josh Allen", size=4, color="#69b3a2") +
   theme(
     legend.position="none",
     plot.title = element_text(size=14),
     panel.grid.minor.x = element_blank()
   )
+  
+airdiff
 
 #multiple graphs highlighting different players
 tmp <- stats %>%
@@ -174,13 +175,17 @@ airdiff1 <- tmp[1:18,] %>% #change numbers according to rows in player_team to g
   ggtitle("Players A - Z Air Diff by Season") +
   facet_wrap(~Player2)
 
-
+airdiff1
   
 
 #scatterplots - can make these fancier
 air_scatter <- stats %>% ggplot(aes(x=g_air_yards, y = as_air_yards))+geom_point()
 epa_scatter <- stats %>% ggplot(aes(x=g_epa, y = as_epa))+geom_point()
 cpoe_scatter <- stats %>% ggplot(aes(x=g_cpoe, y = as_cpoe))+geom_point()
+
+air_scatter
+epa_scatter
+cpoe_scatter
 
 #boxplots
 air_box <- stats %>% ggplot(aes(x=g_air_yards, 
@@ -197,6 +202,10 @@ epa_box <- stats %>% ggplot(aes(x=g_epa,
                                 y = season, 
                                 group = season)) + 
                     geom_boxplot()
+                    
+air_box
+cpoe_box
+epa_box                    
 
  
 #______________________________________________________________________________________________________________________________________________________________________
