@@ -158,6 +158,13 @@ airdiff
 #multiple graphs highlighting different players
 tmp <- stats %>%
   mutate(Player2=passer_player_name)
+  
+#remove players with only 1 season - this is ugly, there must be a better way to do this
+
+tmp2 <- subset(tmp, passer_player_name != "C.Newton" & passer_player_name != "D.Blough" & passer_player_name != "D.Mills" & passer_player_name != "J.Fields" & passer_player_name != "J.Flacco" & passer_player_name != "J.Hurts" & passer_player_name != "	
++ K.Allen" & passer_player_name != "M.Jones" & passer_player_name != "M.Mariota" & passer_player_name != "M.Rudolph" & passer_player_name != "N.Foles" & passer_player_name != "N.Mullens" & passer_player_name != "	
++ T.Heinicke" & passer_player_name != "T.Huntley" & passer_player_name != "T.Lawrence" & passer_player_name != "T.Siemian" & passer_player_name != "N.Foles" & passer_player_name != "Z.Wilson" & passer_player_name != "A.Smith" & passer_player_name != "C.Keenum")
+
 
 #air diff by player by year -- gives lots of error messages, but works -- need to do something about players with only 1 year
 airdiff1 <- tmp[1:18,] %>% #change numbers according to rows in player_team to get 9 players
