@@ -19,6 +19,7 @@ library(remotes)
 library(nflplotR)  #may need to install this
 library(ggalt) #needed for dumbell plot
 library(forcats)
+library("ggimage")
 
 
 
@@ -192,9 +193,9 @@ airdiff1
   
 
 #scatterplots - can make these fancier - add y = x line?
-air_scatter <- stats %>% ggplot(aes(x=g_air_yards, y = as_air_yards))+geom_point()
-epa_scatter <- stats %>% ggplot(aes(x=g_epa, y = as_epa))+geom_point()
-cpoe_scatter <- stats %>% ggplot(aes(x=g_cpoe, y = as_cpoe))+geom_point()
+air_scatter <- stats %>% ggplot(aes(x=g_air_yards, y = as_air_yards)) + geom_image(aes(image = team_logo_espn)) +geom_abline(slope = 1, intercept = 0) 
+epa_scatter <- stats %>% ggplot(aes(x=g_epa, y = as_epa))+geom_point() + geom_image(aes(image = team_logo_espn)) +geom_abline(slope = 1, intercept = 0)
+cpoe_scatter <- stats %>% ggplot(aes(x=g_cpoe, y = as_cpoe))+geom_point() + geom_image(aes(image = team_logo_espn)) +geom_abline(slope = 1, intercept = 0)
 
 air_scatter + geom_abline(slope = 1, intercept = 0)
 epa_scatter + geom_abline(slope = 1, intercept = 0)
