@@ -114,11 +114,11 @@ stats <- stats %>%
   )
 
 stats2019 <- stats %>% filter(season == 2019)
-stats2019 <- stats %>% filter(season == 2020)
-stats2019 <- stats %>% filter(season == 2021)
+stats2020 <- stats %>% filter(season == 2020)
+stats2021 <- stats %>% filter(season == 2021)
 
-#makes a plot that connects each type of stat
-stats %>%
+#makes a plot that connects each type of stat have to change 2019 to other years in 9(?) places
+ayd19 <- stats2019 %>%
   ggplot(aes(x = g_air_yards, xend =as_air_yards,  y = fct_reorder(passer_player_name, g_air_yards))) +
   geom_dumbbell(aes(fill = team_color, color = team_color), size = 1.5) +
   geom_point(aes(fill = team_color2), size = 2, shape = 21, stroke = .7) +
@@ -126,19 +126,19 @@ stats %>%
   theme_bw() +
   theme(panel.background = element_rect(fill = "#9CC371"),
         panel.grid.minor.x = element_blank()) +
-  scale_x_continuous(breaks = seq(5,15,1)) +
+  scale_x_continuous(breaks = seq(2,15,1)) +
   labs(x = "Average Air Yards - from reg play to after setback play",
        y = "",
-       title = "2021 QB Play After a Setback",
+       title = "2019 QB Play After a Setback",
        subtitle = "Next Pass After an Interception, Fumble, or Sack",
-       caption = "@jmeerse  Data: nflfastr") +
+       caption = "Data: nflfastr") +
   theme(plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
         plot.subtitle = element_text(size = 10, hjust = 0.5),
         panel.grid.major.y = element_line(size = 0.1)) +
-  annotate("segment", x = stats$g_air_yards, xend = stats$as_air_yards, y = stats$passer_player_name, yend = stats$passer_player_name,
-           color = stats$team_color, arrow = arrow(length =unit(3,"mm"))) +
-  geom_text(data=stats, aes(x=as_air_yards, y=passer_player_name, label=air_diff),
-            color=stats$team_color, size=2.75, vjust=-0.5)
+  annotate("segment", x = stats2019$g_air_yards, xend = stats2019$as_air_yards, y = stats2019$passer_player_name, yend = stats2019$passer_player_name,
+           color = stats2019$team_color, arrow = arrow(length =unit(3,"mm"))) +
+  geom_text(data=stats2019, aes(x=as_air_yards, y=passer_player_name, label=air_diff),
+            color=stats2019$team_color, size=2.75, vjust=-0.5)
             
 
 #highlight a specific player
