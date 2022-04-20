@@ -18,6 +18,7 @@ library(gtExtras)
 library(remotes)
 library(nflplotR)  #may need to install this
 library(ggalt) #needed for dumbell plot
+library(forcats)
 
 
 
@@ -112,6 +113,10 @@ stats <- stats %>%
          epa_diff = as_epa - g_epa
   )
 
+stats2019 <- stats %>% filter(season == 2019)
+stats2019 <- stats %>% filter(season == 2020)
+stats2019 <- stats %>% filter(season == 2021)
+
 #makes a plot that connects each type of stat
 stats %>%
   ggplot(aes(x = g_air_yards, xend =as_air_yards,  y = fct_reorder(passer_player_name, g_air_yards))) +
@@ -167,13 +172,13 @@ tmp2 <- subset(tmp, passer_player_name != "C.Newton" & passer_player_name != "D.
 
 
 #air diff by player by year -- gives lots of error messages, but works -- need to do something about players with only 1 year
-airdiff1 <- tmp[1:18,] %>% #change numbers according to rows in player_team to get 9 players
+airdiff1 <- tmp2[1:18,] %>% #change numbers according to rows in player_team to get 9 players
   ggplot( aes(x=season, y=air_diff)) +
-  geom_line( data=tmp %>% dplyr::select(-Player2), aes(group=passer_player_name), color="grey", size=0.5, alpha=0.5) +
+  geom_line( data=tmp2 %>% dplyr::select(-Player2), aes(group=passer_player_name), color="grey", size=0.5, alpha=0.5) +
   geom_line( aes(color=passer_player_name), color="#69b3a2", size=1.2 ) +
   scale_x_continuous(breaks = c(2019, 2020, 2021)) + 
-  scale_color_viridis(discrete = TRUE) +
-  theme_ipsum() +
+  #scale_color_viridis(discrete = TRUE) + 
+  #theme_ipsum() + 
   theme(
     legend.position="none",
     plot.title = element_text(size=14),
@@ -191,9 +196,9 @@ air_scatter <- stats %>% ggplot(aes(x=g_air_yards, y = as_air_yards))+geom_point
 epa_scatter <- stats %>% ggplot(aes(x=g_epa, y = as_epa))+geom_point()
 cpoe_scatter <- stats %>% ggplot(aes(x=g_cpoe, y = as_cpoe))+geom_point()
 
-air_scatter
-epa_scatter
-cpoe_scatter
+air_scatter + geom_abline(slope = 1, intercept = 0)
+epa_scatter + geom_abline(slope = 1, intercept = 0)
+cpoe_scatter + geom_abline(slope = 1, intercept = 0)
 
 #boxplots - change g_ to as_ for after setback - how to get both on one graph?
 air_box <- stats %>% ggplot(aes(x=g_air_yards, 
