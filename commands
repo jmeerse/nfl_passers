@@ -9,7 +9,7 @@ remotes::install_github("jthomasmock/gtExtras")
 install.packages("hrbrthemes")
 install.packages("viridisLite")
 
-#need to load libraries every time you run the program
+#need to load libraries every time you run the program  -- had been loading forcats, but think that's part of tidyverse
 library(tidyverse)
 library(nflfastR)
 library(ggimage)
@@ -18,8 +18,7 @@ library(gtExtras)
 library(remotes)
 library(nflplotR)  #may need to install this
 library(ggalt) #needed for dumbell plot
-library(forcats)
-library("ggimage")
+
 
 
 
@@ -197,9 +196,9 @@ air_scatter <- stats %>% ggplot(aes(x=g_air_yards, y = as_air_yards)) + geom_ima
 epa_scatter <- stats %>% ggplot(aes(x=g_epa, y = as_epa))+geom_point() + geom_image(aes(image = team_logo_espn)) +geom_abline(slope = 1, intercept = 0)
 cpoe_scatter <- stats %>% ggplot(aes(x=g_cpoe, y = as_cpoe))+geom_point() + geom_image(aes(image = team_logo_espn)) +geom_abline(slope = 1, intercept = 0)
 
-air_scatter + geom_abline(slope = 1, intercept = 0)
-epa_scatter + geom_abline(slope = 1, intercept = 0)
-cpoe_scatter + geom_abline(slope = 1, intercept = 0)
+air_scatter 
+epa_scatter 
+cpoe_scatter 
 
 #boxplots - change g_ to as_ for after setback - how to get both on one graph?
 air_box <- stats %>% ggplot(aes(x=g_air_yards, 
