@@ -8,6 +8,7 @@ library(remotes)
 remotes::install_github("jthomasmock/gtExtras")
 install.packages("hrbrthemes")
 install.packages("viridisLite")
+install.packages("ggpubr")
 
 #need to load libraries every time you run the program  -- had been loading forcats, but think that's part of tidyverse
 library(tidyverse)
@@ -18,6 +19,7 @@ library(gtExtras)
 library(remotes)
 library(nflplotR)  #may need to install this
 library(ggalt) #needed for dumbell plot
+library(ggpubr) #for multiple plots on one graph
 
 
 
