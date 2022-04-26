@@ -10,7 +10,7 @@ install.packages("hrbrthemes")
 install.packages("viridisLite")
 install.packages("ggpubr")
 
-#need to load libraries every time you run the program  -- had been loading forcats, but think that's part of tidyverse
+#need to load libraries every time you run the program
 library(tidyverse)
 library(nflfastR)
 library(ggimage)
@@ -19,17 +19,16 @@ library(gtExtras)
 library(remotes)
 library(nflplotR)  #may need to install this
 library(ggalt) #needed for dumbell plot
-library(ggpubr) #for multiple plots on one graph
+library(viridisLite)
+library(ggpubr)
 
 
-
-
-#load play-by-play data
+# load play-by-play data
 
 pbp1921 <- load_pbp(2019:2021)
-pbp_21$passer_player_name[pbp1921$passer_player_name == "Jos.Allen"] <- "J.Allen" #Josh allen got recoded only during week 3 2021
-pbp_21$passer_player_name[pbp1921$passer_player_name == "Aa.Rodgers"] <- "A.Rodgers" #Aaron Rodgers also got recoded 
-pbp_21$passer_player_name[pbp1921$passer_player_name == "G.Minshew"] <- "A.Rodgers" #Aaron Rodgers also got recoded 
+pbp1921$passer_player_name[pbp1921$passer_player_name == "Jos.Allen"] <- "J.Allen" #Josh allen got recoded only during week 3 2021
+pbp1921$passer_player_name[pbp1921$passer_player_name == "Aa.Rodgers"] <- "A.Rodgers" #Aaron Rodgers also got recoded 
+pbp1921$passer_player_name[pbp1921$passer_player_name == "G.Minshew II"] <- "G.Minshew" #Minshew also got recoded 
 
 #trying to measure after sack for every qb
 pbpp <- pbp1921 %>%
@@ -106,7 +105,7 @@ stats <- left_join(stats_ns, stats_as, by = c("passer_player_name", "season"))
 
 #puts logos and colors on
 stats <- stats %>%
-     left_join(teams_colors_logos, by = c("team" = "team_abbr"))
+  left_join(teams_colors_logos, by = c("team" = "team_abbr"))
 
 #difference good - after sack
 stats <- stats %>% 
@@ -119,8 +118,8 @@ stats2019 <- stats %>% filter(season == 2019)
 stats2020 <- stats %>% filter(season == 2020)
 stats2021 <- stats %>% filter(season == 2021)
 
-#makes a plot that connects each type of stat have to change 2019 to other years in 9(?) places
-ayd19 <- stats2019 %>%
+#makes a plot that connects each type of stat
+ayd21 <- stats2021 %>% 
   ggplot(aes(x = g_air_yards, xend =as_air_yards,  y = fct_reorder(passer_player_name, g_air_yards))) +
   geom_dumbbell(aes(fill = team_color, color = team_color), size = 1.5) +
   geom_point(aes(fill = team_color2), size = 2, shape = 21, stroke = .7) +
@@ -128,20 +127,20 @@ ayd19 <- stats2019 %>%
   theme_bw() +
   theme(panel.background = element_rect(fill = "#9CC371"),
         panel.grid.minor.x = element_blank()) +
-  scale_x_continuous(breaks = seq(2,15,1)) +
+  scale_x_continuous(breaks = seq(5,15,1)) +
   labs(x = "Average Air Yards - from reg play to after setback play",
        y = "",
-       title = "2019 QB Play After a Setback",
+       title = "2021 QB Play After a Setback",
        subtitle = "Next Pass After an Interception, Fumble, or Sack",
        caption = "Data: nflfastr") +
   theme(plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
         plot.subtitle = element_text(size = 10, hjust = 0.5),
         panel.grid.major.y = element_line(size = 0.1)) +
-  annotate("segment", x = stats2019$g_air_yards, xend = stats2019$as_air_yards, y = stats2019$passer_player_name, yend = stats2019$passer_player_name,
-           color = stats2019$team_color, arrow = arrow(length =unit(3,"mm"))) +
-  geom_text(data=stats2019, aes(x=as_air_yards, y=passer_player_name, label=air_diff),
-            color=stats2019$team_color, size=2.75, vjust=-0.5)
-            
+  annotate("segment", x = stats2021$g_air_yards, xend = stats2021$as_air_yards, y = stats2021$passer_player_name, yend = stats2021$passer_player_name,
+           color = stats2021$team_color, arrow = arrow(length =unit(3,"mm"))) +
+  geom_text(data=stats2021, aes(x=as_air_yards, y=passer_player_name, label=air_diff),
+            color=stats2021$team_color, size=2.75, vjust=-0.5)
+
 
 #highlight a specific player
 airdiff <- stats %>%
@@ -152,35 +151,28 @@ airdiff <- stats %>%
   scale_size_manual(values=c(1.5,0.2)) +
   scale_x_continuous(breaks = c(2019, 2020, 2021)) + 
   ggtitle("Air Yards Differential After Setback") +
-  #theme_ipsum() +
+  theme_ipsum() +
   geom_label( x=2020, y=2, label="Josh Allen", size=4, color="#69b3a2") +
   theme(
     legend.position="none",
     plot.title = element_text(size=14),
     panel.grid.minor.x = element_blank()
   )
-  
+
 airdiff
 
 #multiple graphs highlighting different players
 tmp <- stats %>%
   mutate(Player2=passer_player_name)
-  
-#remove players with only 1 season - this is ugly, there must be a better way to do this
-
-tmp2 <- subset(tmp, passer_player_name != "C.Newton" & passer_player_name != "D.Blough" & passer_player_name != "D.Mills" & passer_player_name != "J.Fields" & passer_player_name != "J.Flacco" & passer_player_name != "J.Hurts" & passer_player_name != "	
-+ K.Allen" & passer_player_name != "M.Jones" & passer_player_name != "M.Mariota" & passer_player_name != "M.Rudolph" & passer_player_name != "N.Foles" & passer_player_name != "N.Mullens" & passer_player_name != "	
-+ T.Heinicke" & passer_player_name != "T.Huntley" & passer_player_name != "T.Lawrence" & passer_player_name != "T.Siemian" & passer_player_name != "N.Foles" & passer_player_name != "Z.Wilson" & passer_player_name != "A.Smith" & passer_player_name != "C.Keenum")
-
 
 #air diff by player by year -- gives lots of error messages, but works -- need to do something about players with only 1 year
-airdiff1 <- tmp2[1:18,] %>% #change numbers according to rows in player_team to get 9 players
+airdiff2 <- tmp[19:38,] %>% #change numbers according to rows in player_team to get 9 players
   ggplot( aes(x=season, y=air_diff)) +
-  geom_line( data=tmp2 %>% dplyr::select(-Player2), aes(group=passer_player_name), color="grey", size=0.5, alpha=0.5) +
+  geom_line( data=tmp %>% dplyr::select(-Player2), aes(group=passer_player_name), color="grey", size=0.5, alpha=0.5) +
   geom_line( aes(color=passer_player_name), color="#69b3a2", size=1.2 ) +
   scale_x_continuous(breaks = c(2019, 2020, 2021)) + 
-  #scale_color_viridis(discrete = TRUE) + 
-  #theme_ipsum() + 
+  #scale_color_viridis(discrete = TRUE) +
+  #theme_ipsum() +
   theme(
     legend.position="none",
     plot.title = element_text(size=14),
@@ -190,9 +182,10 @@ airdiff1 <- tmp2[1:18,] %>% #change numbers according to rows in player_team to 
   ggtitle("Players A - Z Air Diff by Season") +
   facet_wrap(~Player2)
 
-airdiff1
-  
+airdiff2
 
+
+#scatterplots - can make these fancier 
 #scatterplots - can make these fancier - add y = x line?
 air_scatter <- stats %>% ggplot(aes(x=g_air_yards, y = as_air_yards)) + geom_image(aes(image = team_logo_espn)) +geom_abline(slope = 1, intercept = 0) 
 epa_scatter <- stats %>% ggplot(aes(x=g_epa, y = as_epa))+geom_point() + geom_image(aes(image = team_logo_espn)) +geom_abline(slope = 1, intercept = 0)
@@ -203,26 +196,39 @@ epa_scatter
 cpoe_scatter 
 
 #boxplots - change g_ to as_ for after setback - how to get both on one graph?
-air_box <- stats %>% ggplot(aes(x=g_air_yards, 
-                                y = season, 
-                                group = season)) + 
-                    geom_boxplot()
+air_boxas <- stats %>% ggplot(aes(y=as_air_yards, 
+                                x = season, 
+                                group = season) ) + 
+  geom_boxplot() + coord_cartesian(xlim = c(2018.5, 2021.5),ylim = c(2.5, 13))
 
-cpoe_box <- stats %>% ggplot(aes(x=g_cpoe, 
-                                y = season, 
-                                group = season)) + 
-                    geom_boxplot()
+cpoe_boxas <- stats %>% ggplot(aes(y=as_cpoe, 
+                                 x = season, 
+                                 group = season)) + 
+  geom_boxplot()+ coord_cartesian(xlim = c(2018.5, 2021.5),ylim = c(-20, 13))
 
-epa_box <- stats %>% ggplot(aes(x=g_epa, 
-                                y = season, 
+epa_boxas <- stats %>% ggplot(aes(y=as_epa, 
+                                x = season, 
                                 group = season)) + 
-                    geom_boxplot()
-                    
+  geom_boxplot()+ coord_cartesian(xlim = c(2018.5, 2021.5),ylim = c(-0.3, .5))
+
+#use same commands above but create ___2 graphs by changing g_ to as_
 air_box
 cpoe_box
-epa_box                    
+epa_box
 
- 
+#multiple plots on one graph - same y-axis?
+g1 <- ggarrange(air_boxg, air_boxas, cpoe_boxg, cpoe_boxas,epa_boxg, epa_boxas, 
+          labels = c("AirG", "AirAs", "CpoeG", "CpoeAs", "EPAg", "EPAas"),
+          ncol = 2, nrow = 3)
+
+g1
+#table of summary statistics for diffentials 
+write.csv(tmp %>% summary(), "summary.csv")
+
+
+
+
+
 #______________________________________________________________________________________________________________________________________________________________________
 #below this is just looking at one QB
 
